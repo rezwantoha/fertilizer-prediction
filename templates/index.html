@@ -33,6 +33,10 @@
               <label for="p">P/S test value</label>
               <input id="p" name="p" type="number" min="0" step="any" value="{{ form.p }}" required>
             </div>
+            <div>
+              <label for="land_area">Land Area (decimal)</label>
+              <input id="land_area" name="land_area" type="number" min="0.01" step="any" value="{{ form.land_area }}" required>
+            </div>
           </div>
 
           <button type="submit">Calculate recommendation</button>
@@ -44,13 +48,13 @@
 
         {% if prediction %}
           <section class="results" aria-live="polite">
-            <p class="eyebrow">Predicted fertilizer amount</p>
+            <p class="eyebrow">Predicted fertilizer requirement ({{ prediction.land_area }} decimal area)</p>
             <div class="result-grid">
-              {% for fertilizer, amount in prediction.items() %}
+              {% for fertilizer, details in prediction.fertilizers.items() %}
                 <article>
                   <h2>{{ fertilizer }}</h2>
-                  <p>{{ amount }}</p>
-                  <span>model units</span>
+                  <p>{{ details.total }} gm</p>
+                  <span>Rate: {{ details.rate }} {{ prediction.unit_param }}</span>
                 </article>
               {% endfor %}
             </div>
