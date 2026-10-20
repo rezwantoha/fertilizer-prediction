@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="{{ language }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ copy.description }}">
+  <meta name="theme-color" content="#205b42">
+  <title>{{ copy.page_title }}</title>
+  <link rel="icon" href="{{ url_for('static', filename='mark.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='3') }}">
+  <script src="{{ url_for('static', filename='app.js', v='3') }}" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="skip">{{ copy.skip }}</a>
+  <header class="site-header">
+    <a class="home-link" href="/"><img src="{{ url_for('static', filename='mark.svg') }}" width="40" height="40" alt=""><span data-i18n="home">{{ copy.home }}</span></a>
+    <nav class="language-switch" aria-label="{{ copy.language }}">
+      <a href="?lang=bn" lang="bn" data-language="bn" {% if language == 'bn' %}aria-current="true"{% endif %}>বাংলা</a>
+      <a href="?lang=en" lang="en" data-language="en" {% if language == 'en' %}aria-current="true"{% endif %}>English</a>
+    </nav>
+  </header>
+  <div id="app-copy" data-translations="{{ translations|tojson|forceescape }}" hidden></div>
+  {% block content %}{% endblock %}
+  <footer class="site-footer"><p data-i18n="source">{{ copy.source }}</p></footer>
+</body>
+</html>

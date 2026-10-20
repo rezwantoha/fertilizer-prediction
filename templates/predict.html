@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<main id="main" class="page-width">
+  <div class="page-intro">
+    <h1 data-i18n="title">{{ copy.title }}</h1>
+    <p data-i18n="intro">{{ copy.intro }}</p>
+  </div>
+  {% if unavailable %}<p class="notice error" role="alert" data-i18n="unavailable">{{ copy.unavailable }}</p>{% endif %}
+  <div class="calculator-layout">
+    <section class="input-panel" aria-labelledby="form-title">
+      <form id="prediction-form" novalidate>
+        <fieldset>
+          <legend id="form-title"><span class="step" aria-hidden="true" data-number="1">{{ '১' if language == 'bn' else '1' }}</span><span data-i18n="step_one">{{ copy.step_one }}</span></legend>
+          <div class="field"><label for="crop" data-i18n="crop">{{ copy.crop }}</label>
+            <select id="crop" name="crop" required {% if unavailable %}disabled{% endif %} aria-describedby="prediction-error">
+              <option value="" selected disabled data-i18n="choose_crop">{{ copy.choose_crop }}</option>
+              {% for crop in crops %}<option value="{{ crop.value }}" data-crop="{{ crop.value }}">{{ copy.crops[crop.value] }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="area-fields">
+            <div class="field"><label for="area" data-i18n="area">{{ copy.area }}</label><input id="area" name="area" type="text" inputmode="decimal" required autocomplete="off" maxlength="24" data-min="0.000001" data-max="1000000" data-label="area" data-numeric placeholder="{{ copy.area_placeholder }}" data-i18n-placeholder="area_placeholder" aria-describedby="area-help prediction-error"></div>
+            <div class="field"><label for="area-unit" data-i18n="area_unit">{{ copy.area_unit }}</label><select id="area-unit" name="area_unit"><option value="decimal" data-i18n="decimal_option">{{ copy.decimal_option }}</option><option value="acre" data-i18n="acre">{{ copy.acre }}</option><option value="hectare" data-i18n="hectare">{{ copy.hectare }}</option></select></div>
+          </div>
+          <p class="field-help" id="area-help" data-i18n="area_help">{{ copy.area_help }}</p>
+        </fieldset>
+        <fieldset>
+          <legend><span class="step" aria-hidden="true" data-number="2">{{ '২' if language == 'bn' else '2' }}</span><span data-i18n="step_two">{{ copy.step_two }}</span></legend>
+          <div class="soil-fields">
+            <div class="field"><label for="nk" data-i18n="nk">{{ copy.nk }}</label><input id="nk" name="nk" type="text" inputmode="decimal" required autocomplete="off" maxlength="24" data-min="0" data-max="0.36" data-label="nk" data-numeric placeholder="{{ copy.nk_placeholder }}" data-i18n-placeholder="nk_placeholder" aria-describedby="nk-help prediction-error"><p class="field-help" id="nk-help" data-i18n="nk_help">{{ copy.nk_help }}</p></div>
+            <div class="field"><label for="p" data-i18n="p">{{ copy.p }}</label><input id="p" name="p" type="text" inputmode="decimal" required autocomplete="off" maxlength="24" data-min="0" data-max="36" data-label="p" data-numeric placeholder="{{ copy.p_placeholder }}" data-i18n-placeholder="p_placeholder" aria-describedby="p-help prediction-error"><p class="field-help" id="p-help" data-i18n="p_help">{{ copy.p_help }}</p></div>
+          </div>
+          <p class="field-help" data-i18n="digits_help">{{ copy.digits_help }}</p>
+          <p class="notice" data-i18n="input_help">{{ copy.input_help }}</p>
+        </fieldset>
+        <p class="notice error" id="prediction-error" role="alert" hidden></p>
+        <button class="button primary full-width" type="submit" {% if unavailable %}disabled{% endif %} data-submit-label="calculate"><span data-i18n="calculate">{{ copy.calculate }}</span><span aria-hidden="true">→</span></button>
+        <div class="form-actions"><button class="text-button" type="button" id="sample-button" {% if unavailable %}disabled{% endif %} data-i18n="example">{{ copy.example }}</button><button class="text-button" type="reset" data-i18n="reset">{{ copy.reset }}</button></div>
+        <p class="field-help privacy-note" data-i18n="privacy">{{ copy.privacy }}</p>
+      </form>
+    </section>
+    <section class="output-panel" aria-labelledby="result-title" aria-live="polite" aria-busy="false">
+      <h2 id="result-title" tabindex="-1" data-i18n="result_title">{{ copy.result_title }}</h2>
+      <div id="empty-result" class="empty-result">
+        <svg aria-hidden="true" viewBox="0 0 100 100" fill="none"><path d="M50 65V38m0 12C31 50 25 38 27 25c15 0 23 9 23 25Zm0-8c0-16 11-24 25-24 0 15-10 24-25 24ZM20 75c20-9 40-9 60 0M24 87c18-6 34-6 52 0" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+        <h3 data-i18n="empty_title">{{ copy.empty_title }}</h3>
+        <p data-i18n="empty_text">{{ copy.empty_text }}</p>
+      </div>
+      <div id="prediction-result" hidden>
+        <p class="plot-summary" id="result-context"></p>
+        <p class="field-help" id="result-inputs"></p>
+        <p class="notice warning" id="result-warning" hidden></p>
+        <div class="result-toolbar"><p data-i18n="estimated">{{ copy.estimated }}</p><div class="unit-toggle" role="group" aria-label="{{ copy.mass_label }}" data-i18n-aria="mass_label"><button type="button" data-mass="kg" aria-pressed="true" data-i18n="kg">{{ copy.kg }}</button><button type="button" data-mass="g" aria-pressed="false" data-i18n="g">{{ copy.g }}</button></div></div>
+        <div id="fertilizer-results" class="fertilizer-results"></div>
+        <p class="result-note" data-i18n="result_note">{{ copy.result_note }}</p>
+        <div class="result-actions"><button class="button secondary" id="download-result" type="button"><span aria-hidden="true">↓</span><span data-i18n="download">{{ copy.download }}</span></button><button class="text-button" id="print-result" type="button" data-i18n="print">{{ copy.print }}</button></div>
+      </div>
+    </section>
+  </div>
+  <section class="more-information" aria-label="{{ copy.about }}" data-i18n-aria="about">
+    <details><summary data-i18n="about">{{ copy.about }}</summary><div class="details-content"><p data-i18n="about_text">{{ copy.about_text }}</p><p data-i18n="about_inputs">{{ copy.about_inputs }}</p><p data-i18n="about_units">{{ copy.about_units }}</p></div></details>
+    <details id="calibration-details">
+      <summary data-i18n="advanced">{{ copy.advanced }}</summary>
+      <div class="details-content">
+        <p data-i18n="cal_intro">{{ copy.cal_intro }}</p>
+        <form id="calibration-form" novalidate>
+          <div class="calibration-fields">
+            <div class="field"><label for="sensor-n" data-i18n="sensor_n">{{ copy.sensor_n }}</label><input id="sensor-n" name="n" type="text" inputmode="decimal" data-min="0.001" data-max="0.013" data-label="sensor_n" data-numeric value="{{ '০.০০৩' if language == 'bn' else '0.003' }}" required autocomplete="off" maxlength="24" aria-describedby="sensor-n-help calibration-error"><p class="field-help" id="sensor-n-help" data-i18n="sensor_n_help">{{ copy.sensor_n_help }}</p></div>
+            <div class="field"><label for="sensor-p" data-i18n="sensor_p">{{ copy.sensor_p }}</label><input id="sensor-p" name="p" type="text" inputmode="decimal" data-min="72" data-max="352" data-label="sensor_p" data-numeric value="{{ '১০৪' if language == 'bn' else '104' }}" required autocomplete="off" maxlength="24" aria-describedby="sensor-p-help calibration-error"><p class="field-help" id="sensor-p-help" data-i18n="sensor_p_help">{{ copy.sensor_p_help }}</p></div>
+            <div class="field"><label for="sensor-k" data-i18n="sensor_k">{{ copy.sensor_k }}</label><input id="sensor-k" name="k" type="text" inputmode="decimal" data-min="0.164" data-max="0.885" data-label="sensor_k" data-numeric value="{{ '০.২৪৮' if language == 'bn' else '0.248' }}" required autocomplete="off" maxlength="24" aria-describedby="sensor-k-help calibration-error"><p class="field-help" id="sensor-k-help" data-i18n="sensor_k_help">{{ copy.sensor_k_help }}</p></div>
+          </div>
+          <p class="notice error" id="calibration-error" role="alert" hidden></p>
+          <button class="button secondary" type="submit" data-submit-label="cal_calculate" data-i18n="cal_calculate">{{ copy.cal_calculate }}</button>
+        </form>
+        <section id="calibration-result" aria-live="polite" aria-busy="false" hidden>
+          <h2 tabindex="-1" data-i18n="cal_result_title">{{ copy.cal_result_title }}</h2>
+          <div id="calibration-readings"></div>
+          <p class="notice warning" data-i18n="cal_limitation">{{ copy.cal_limitation }}</p>
+          <p class="field-help" data-i18n="cal_basis">{{ copy.cal_basis }}</p>
+        </section>
+      </div>
+    </details>
+  </section>
+  <noscript><p class="notice warning" data-i18n="no_script">{{ copy.no_script }}</p></noscript>
+</main>
+{% endblock %}

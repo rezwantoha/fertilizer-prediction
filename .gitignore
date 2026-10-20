@@ -1,5 +1,6 @@
 # Virtual environments
 .venv/
+.venv-*/
 venv/
 env/
 
@@ -25,3 +26,7 @@ Thumbs.db
 
 # Local env config
 .env
+
+# Local test and preview outputs
+.pytest_cache/
+.preview/
